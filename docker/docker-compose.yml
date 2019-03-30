@@ -1,0 +1,91 @@
+version: "3"
+
+services:
+  nginx_srv:
+    build:
+      context: ./nginx
+      args:
+        - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+        - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    expose:
+#      - "9001"
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+    restart: always
+    volumes:
+      - ./../:/var/www/html
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+    networks:
+      - srv_local
+      - nginx-proxy
+
+  php_srv:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+      args:
+        - X_DEBUG_REMOTE_HOST=${X_DEBUG_REMOTE_HOST}
+        - X_DEBUG_PROFILER_ENABLE=${X_DEBUG_PROFILER_ENABLE}
+        - USE_BLACKFIRE=${USE_BLACKFIRE}
+        - USE_HOST_ASSETS_BUILDER=${USE_HOST_ASSETS_BUILDER}
+    networks:
+      - srv_local
+    #command: ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+    volumes:
+      - ./../:/var/www/html
+#      - ./../.cron:/etc/cron.d
+      - ./../.supervisor:/etc/supervisor/conf.d
+      - /etc/localtime:/etc/localtime:ro
+
+  memcached:
+    image: memcached
+    networks:
+      - srv_local
+    depends_on:
+      - nginx_srv
+      - php_srv
+
+  pgsql_srv:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    environment:
+      FILLA_DB_USER: ${FILLA_DB_USER:-postgres}
+      FILLA_DB_PASSWORD: ${FILLA_DB_PASSWORD:-changeme}
+      FILLA_DB_DATABASE: ${FILLA_DB_DATABASE:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - srv_local
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      VIRTUAL_HOST: pgadmin.local
+    volumes:
+      - ./data/pgadmin:/root/.pgadmin
+    ports:
+#      - "80:8080"
+      - "${PGADMIN_PORT:-5050}:5050"
+    networks:
+      - srv_local
+    restart: unless-stopped
+
+
+
+networks:
+  srv_local:
+  nginx-proxy:
+    external:
+      name: nginx_proxy_nginx-proxy

@@ -1,0 +1,4 @@
+.env
+/redis/*
+/mongodb/*
+/data/*

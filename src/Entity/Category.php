@@ -27,6 +27,16 @@ class Category extends BaseEntity
     private $description;
 
     /**
+     * Many Posts Has Many Categories
+     * @ORM\ManyToMany(targetEntity="Post")
+     * @ORM\JoinTable(name="posts_categories",
+     *     joinColumns={@ORM\JoinColumn(name="category_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="post_id", referencedColumnName="id")}
+     * )
+     */
+    private $posts;
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
@@ -68,6 +78,19 @@ class Category extends BaseEntity
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @param Post $post
+     * @return self
+     */
+    public function addPost(Post $post)
+    {
+        $post->addCategory($this);
+
+        $this->posts[] = $post;
 
         return $this;
     }

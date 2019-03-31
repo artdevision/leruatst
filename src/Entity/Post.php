@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use DateTime;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
@@ -109,10 +110,10 @@ class Post extends BaseEntity
     }
 
     /**
-     * @param \DateTime|null $published_at
+     * @param DateTime|null $published_at
      * @return Post
      */
-    public function setPublishedAt(?\DateTime $published_at): self
+    public function setPublishedAt(?DateTime $published_at): self
     {
         $this->published_at = $published_at;
 
@@ -182,5 +183,12 @@ class Post extends BaseEntity
     public function getAuthor(): ?string
     {
         return $this->author;
+    }
+
+    public function addCategory(Category $category)
+    {
+        $this->categories[] = $category;
+
+        return $this;
     }
 }

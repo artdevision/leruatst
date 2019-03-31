@@ -11,7 +11,7 @@ class AppFixtures extends Fixture
 {
 
     /**
-     * @var Generator
+     * @var Generator $faker
      */
     protected $faker;
 

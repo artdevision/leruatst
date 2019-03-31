@@ -27,7 +27,7 @@ class PostFixtures extends AppFixtures implements OrderedFixtureInterface
                 'title' =>  $this->faker->text(),
                 'preview_text' => $this->faker->realText(),
                 'text' => $this->faker->realText(),
-                'author' => $this->faker->firstName() . " " . $this->faker->name(),
+                'author' => $this->faker->firstName(),
                 'published' => $this->faker->boolean(),
                 'published_at' => $this->faker->dateTime(),
             ]);

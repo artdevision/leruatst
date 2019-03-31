@@ -123,7 +123,7 @@ class Post extends BaseEntity
     /**
      * @return int|null
      */
-    public function getPublishedAt(): ?int
+    public function getPublishedAt(): ?DateTime
     {
         return $this->published_at;
     }
@@ -191,4 +191,18 @@ class Post extends BaseEntity
 
         return $this;
     }
+
+    public function resetCategories()
+    {
+        $this->categories = [];
+    }
+
+    /**
+     * @return ArrayCollection
+     */
+    public function getCategories()
+    {
+        return $this->categories;
+    }
+
 }

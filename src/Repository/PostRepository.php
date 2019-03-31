@@ -2,7 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Category;
 use App\Entity\Post;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 
 /**
  * @method Post|null find($id, $lockMode = null, $lockVersion = null)
@@ -13,6 +16,32 @@ use App\Entity\Post;
 class PostRepository extends BaseRepository
 {
     protected static $entity = Post::class;
+
+    /**
+     * @param Post $entity
+     * @param array $ids
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function syncCategories(Post &$entity, array $ids = [])
+    {
+        $manager = $this->getEntityManager();
+
+        /** @var CategoryRepository $catRepository */
+        $catRepository = $manager->getRepository(Category::class);
+        $entity->resetCategories();
+
+        if (count($ids)) {
+            $categories = $catRepository->findBy(['id' => $ids]);
+
+            foreach ($categories as $category) {
+                $entity->addCategory($category);
+            }
+        }
+
+        $manager->flush();
+        $manager->refresh($entity);
+    }
 
     // /**
     //  * @return Post[] Returns an array of Post objects

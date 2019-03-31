@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use DateTime;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * Class BaseEntity
@@ -28,32 +30,32 @@ class BaseEntity
      */
     public function updateTimestamps(): void
     {
-        $this->setUpdatedAt(new \DateTime('now'));
+        $this->setUpdatedAt(new DateTime('now'));
         if ($this->getCreatedAt() === null) {
-            $this->setCreatedAt(new \DateTime('now'));
+            $this->setCreatedAt(new DateTime('now'));
         }
     }
 
-    public function setCreatedAt(?\DateTime $created_at): self
+    public function setCreatedAt(?DateTime $created_at): self
     {
         $this->created_at = $created_at;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?int
+    public function getCreatedAt(): ?DateTime
     {
         return $this->created_at;
     }
 
-    public function setUpdatedAt(?\DateTime $updated_at): self
+    public function setUpdatedAt(?DateTime $updated_at): self
     {
         $this->updated_at = $updated_at;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?int
+    public function getUpdatedAt(): ?DateTime
     {
         return $this->updated_at;
     }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\AppBundle\AppBundle;
 use App\Entity\Category;
+use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NonUniqueResultException;
@@ -41,7 +42,7 @@ class BaseRepository extends ServiceEntityRepository
 
     /**
      * @param array $data
-     * @return Category
+     * @return Category|Post
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -62,6 +63,15 @@ class BaseRepository extends ServiceEntityRepository
         $manager->refresh($entity);
 
         return $entity;
+    }
+
+    public function save(&$entity, bool $new = false)
+    {
+        if ($new === true) {
+            $this->getEntityManager()->persist($entity);
+        }
+        $this->getEntityManager()->flush();
+        $this->getEntityManager()->refresh($entity);
     }
 
     /**
@@ -98,25 +108,35 @@ class BaseRepository extends ServiceEntityRepository
      * @param int $p
      * @param int $perPage
      * @param array $orderBy
+     * @param null $condition
      * @return array
      * @throws NonUniqueResultException
      */
-    public function paginateAll($p = 1, $perPage = 50, $orderBy = ['published_at' => 'DESC'])
+    public function paginateAll($p = 1, $perPage = 50, $orderBy = ['published_at' => 'DESC'], $condition = null)
     {
         $query = $this->createQueryBuilder('p');
         $totalQuery = $this->createQueryBuilder('p');
+
         if ($this instanceof PostRepository) {
             $query->where('p.published = true');
             $totalQuery->where('p.published = true');
         }
+
+        if (!is_null($condition)) {
+            $query->andWhere($condition);
+            $totalQuery->andWhere($condition);
+        }
+
         $total = $totalQuery->select('COUNT(p.id)')
             ->getQuery()
             ->getSingleScalarResult();
+
         $result = $query->orderBy('p.' . key($orderBy), current($orderBy))
             ->setFirstResult($perPage * ($p - 1))
             ->setMaxResults($perPage)
             ->getQuery()
             ->getResult();
+
         return [
             'items' => $result,
             'total' => $total,

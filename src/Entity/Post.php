@@ -4,10 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 use DateTime;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
+ * @ORM\MappedSuperclass
+ * @ORM\HasLifecycleCallbacks
  */
 class Post extends BaseEntity
 {
@@ -20,16 +23,22 @@ class Post extends BaseEntity
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\NotBlank(message="Поле обязательно для заполнения")
+     * @Assert\Type(type="string", message="Неверный тип данных")
+     * @Assert\Length(max="255", maxMessage="Максимальное количество символов в строке 255")
      */
     private $title;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Assert\DateTime(message="Это значение не является валидным датой и временем")
      */
     private $published_at;
 
     /**
      * @ORM\Column(type="boolean", nullable=false)
+     * @Assert\NotBlank(message="Поле обязательно для заполнения")
+     * @Assert\Type(type="bool", message="Неверный тип данных")
      */
     private $published;
 
@@ -40,6 +49,8 @@ class Post extends BaseEntity
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Assert\NotBlank(message="Поле обязательно для заполнения")
+     * @Assert\Type(type="string", message="Неверный тип данных")
      */
     private $text;
 
@@ -55,6 +66,7 @@ class Post extends BaseEntity
      *     joinColumns={@ORM\JoinColumn(name="post_id", referencedColumnName="id")},
      *     inverseJoinColumns={@ORM\JoinColumn(name="category_id", referencedColumnName="id")}
      * )
+     * @Assert\Type(type="object", message="Неверный тип данных")
      */
     private $categories;
 
@@ -203,6 +215,21 @@ class Post extends BaseEntity
     public function getCategories()
     {
         return $this->categories;
+    }
+
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function updatePublishedAt()
+    {
+        if ($this->getPublished() === null) {
+            $this->published = false;
+        }
+
+        if($this->getPublished() === true && $this->getPublishedAt() === null) {
+            $this->setPublishedAt(new DateTime('now'));
+        }
     }
 
 }

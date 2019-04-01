@@ -4,8 +4,10 @@ namespace App\Repository;
 
 use App\Entity\Category;
 use App\Entity\Post;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
  * @method Post|null find($id, $lockMode = null, $lockVersion = null)
@@ -41,6 +43,22 @@ class PostRepository extends BaseRepository
 
         $manager->flush();
         $manager->refresh($entity);
+    }
+
+    public function getPostIdsByCategory($ids = [])
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $queryBuilder = $connection->createQueryBuilder();
+
+        $query = $queryBuilder->select('p.post_id')
+            ->from('posts_categories', 'p')
+            ->where($queryBuilder->expr()->in("p.category_id", $ids))
+            ->getSQL();
+        $result = $connection->fetchAll($query);
+
+        return array_map(function($val) {
+            return $val['post_id'];
+        }, $result);
     }
 
     // /**

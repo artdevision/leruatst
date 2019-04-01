@@ -6,6 +6,7 @@ use App\AppBundle\AppBundle;
 use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use ReflectionParameter;
@@ -91,5 +92,36 @@ class BaseRepository extends ServiceEntityRepository
                 }
             }
         }
+    }
+
+    /**
+     * @param int $p
+     * @param int $perPage
+     * @param array $orderBy
+     * @return array
+     * @throws NonUniqueResultException
+     */
+    public function paginateAll($p = 1, $perPage = 50, $orderBy = ['published_at' => 'DESC'])
+    {
+        $query = $this->createQueryBuilder('p');
+        $totalQuery = $this->createQueryBuilder('p');
+        if ($this instanceof PostRepository) {
+            $query->where('p.published = true');
+            $totalQuery->where('p.published = true');
+        }
+        $total = $totalQuery->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $result = $query->orderBy('p.' . key($orderBy), current($orderBy))
+            ->setFirstResult($perPage * ($p - 1))
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+        return [
+            'items' => $result,
+            'total' => $total,
+            'page' => $p,
+            'perpage' => $perPage
+        ];
     }
 }

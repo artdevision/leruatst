@@ -93,4 +93,125 @@ root@container$ ./bin/console debug:router
  ---------------------- ----------------- -------- ------ ---------------------------- 
 ```
 
+#### /api/post GET|POST
+
+Параметры:
+
+- `p` - номер страницы
+- `perpage` - количество элементов в выборке
+
+Методом `POST` можно передать JSON или параметры:
+```json
+{
+  "category" :{ 
+    "id": 1
+   }
+}
+``` 
+или 
+```json
+{
+  "category" :{ 
+    "id": [1, 2]
+   }
+}
+```
+С данными параметрами будет применен фильтр постов по указанным ID категорий
+
+Пример ответа:
+```json
+{
+    "total": 59,
+    "page": 1,
+    "perpage": 50,
+    "items": [
+        {
+            "id": 101,
+            "title": "categories",
+            "author": null,
+            "published": true,
+            "published_at": 1554136047,
+            "created_at": 1554136047,
+            "updated_at": 1554136047,
+            "preview_text": null,
+            "text": "samlpe text",
+            "categories": [
+                {
+                  "id": 13,
+                  "name": "Title"
+                }
+            ]
+        }
+    ]
+ }
+```
+
+#### /api/post/{id} GET|POST
+
+Параметры:
+- `id` - ID поста.
+
+Ответ:
+```json
+{
+    "id": 83,
+    "title": "Title",
+    "author": "Janet Bianka Wolf",
+    "published": true,
+    "published_at": 1541154127,
+    "created_at": 1554000134,
+    "updated_at": 1554000134,
+    "preview_text": "Preview text",
+    "text": "Text",
+    "categories": [
+        {
+            "id": 13,
+            "name": "Title"
+        },
+        {
+            "id": 25,
+            "name": "Title"
+        },
+        {
+            "id": 26,
+            "name": "Title"
+        }
+    ]
+}
+```
+
+#### /api/post/create POST|PUT
+
+Создаем пост
+
+Параметры POST:
+- `title`(string) - required
+- `published`(bool) - required
+- `categories[]`(array) - идентификаторы категорий
+- `text`(string) - required 
+
+или JSON в теле запроса
+```json
+{
+  "title":"categories", 
+  "text":"samlpe text", 
+  "categories" : [10,12], 
+  "published":true
+}
+```
+
+Ответ в случае успеха аналогичен роуту /api/post/{id}
+
+Ошибка валидации:
+```json
+{
+    "error": true,
+    "type": "validation",
+    "errors": [
+        {
+            "published": "Поле обязательно для заполнения"
+        }
+    ]
+}
+```
 [jwilder/nginx-proxy]: https://github.com/jwilder/nginx-proxy

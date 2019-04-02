@@ -130,7 +130,7 @@ class CategoryController extends ApiController
         }
 
         $repository->fill($category, $data);
-        $errors = $validator->validate($category,null,['update']);
+        $errors = $validator->validate($category);
 
         if ($errors->count()) {
             return $this->responseValidationErrors($errors);

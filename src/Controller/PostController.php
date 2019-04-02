@@ -152,7 +152,7 @@ class PostController extends ApiController
         }
 
         $repository->fill($post, $data);
-        $errors = $validator->validate($post,null,['update']);
+        $errors = $validator->validate($post);
 
         if ($errors->count()) {
             return $this->responseValidationErrors($errors);

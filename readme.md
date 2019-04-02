@@ -146,7 +146,7 @@ root@container$ ./bin/console debug:router
  }
 ```
 
-#### /api/post/{id} GET|POST
+#### /api/post/{id} GET
 
 Параметры:
 - `id` - ID поста.
@@ -214,4 +214,82 @@ root@container$ ./bin/console debug:router
     ]
 }
 ```
+
+#### /api/post/update/{?id} POST|PUT
+
+Апдейт сущности.
+_Особенность: ID можено передать как в строке запроса так и в теле запроса. Если в строке запроса ID не передан, в теле обязательный параметр иначе будет эксепшен_ 
+
+Параметры, спопсобы передачи аналогичны `/api/post/create`
+
+#### /api/post/destroy/{?id} GET|POST|DELETE
+Удаление сущности.
+_Особенность - если метод `GET` удаляется одна сущность с переданным в строке идентификатором_
+
+Массовое удаление метод `POST`
+
+Параметры:
+- `id`(array|int) - массив идентификаторов или ID если требуется удалить один элемент
+
+Возможен JSON
+```json
+{"id":  [1, 2]}
+``` 
+
+#### /api/category GET
+
+Листинг категорий
+
+Возможные параметры GET:
+
+- `p` - номер страницы
+- `perpage` - количество элементов в выборке
+
+Пример ответа:
+
+```json
+{
+    "total": 32,
+    "page": 1,
+    "perpage": 50,
+    "items": [
+        {
+            "id": 42,
+            "name": "Новое имя",
+            "description": null,
+            "created_at": 1554188245,
+            "updated_at": 1554188245
+        }
+    ]
+}
+```
+#### /api/category/{id} GET
+
+Параметры:
+- `id` - ID категории.
+
+Ответ:
+```json
+{
+    "id": 42,
+    "name": "Новое имя",
+    "description": null,
+    "created_at": 1554188245,
+    "updated_at": 1554188245
+}
+```
+
+#### /api/category/create POST|PUT
+#### /api/category/update/{?id} POST|PUT
+
+Параметры GET или JSON:
+- `name`(string) - required
+- `description`(string)
+
+Остальное идиентично `/api/post/create`
+
+#### /api/category/destroy/{?id} GET|POST|DELETE
+
+Идиентично `/api/post/destroy`
+
 [jwilder/nginx-proxy]: https://github.com/jwilder/nginx-proxy

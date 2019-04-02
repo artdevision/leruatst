@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
@@ -18,6 +19,9 @@ class Category extends BaseEntity
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\NotBlank(message="Поле обязательно для заполнения")
+     * @Assert\Type(type="string", message="Неверный тип данных")
+     * @Assert\Length(max="255", maxMessage="Максимальное количество символов в строке 255")
      */
     private $name;
 

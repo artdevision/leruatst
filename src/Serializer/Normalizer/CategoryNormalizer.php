@@ -2,31 +2,20 @@
 
 namespace App\Serializer\Normalizer;
 
-use App\Entity\Post;
+use App\Entity\Category;
 use Symfony\Component\Serializer\Exception\CircularReferenceException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-
-class PostListNormalizer implements NormalizerInterface
+class CategoryNormalizer implements NormalizerInterface
 {
-    /**
-     * @var PostNormalizer
-     */
-    protected $normalizer;
-
-    public function __construct(PostNormalizer $normalizer)
-    {
-        $this->normalizer = $normalizer;
-    }
 
     /**
      * Normalizes an object into a set of arrays/scalars.
      *
-     * @param mixed $object Object to normalize
+     * @param Category $object Object to normalize
      * @param string $format Format the normalization result will be encoded as
      * @param array $context Context options for the normalizer
      *
@@ -41,12 +30,11 @@ class PostListNormalizer implements NormalizerInterface
     public function normalize($object, $format = null, array $context = [])
     {
         return [
-            'total' => $object['total'],
-            'page' => $object['page'],
-            'perpage' => $object['perpage'],
-            'items' => array_map(function(Post $post) {
-                return $this->normalizer->normalize($post);
-            }, $object['items']),
+            "id" => $object->getId(),
+            "name" => $object->getName(),
+            "description" => $object->getDescription(),
+            "created_at" => $object->getCreatedAt()->getTimestamp(),
+            "updated_at" => $object->getUpdatedAt()->getTimestamp()
         ];
     }
 

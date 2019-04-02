@@ -2,23 +2,21 @@
 
 namespace App\Serializer\Normalizer;
 
-use App\Entity\Post;
+use App\Entity\Category;
 use Symfony\Component\Serializer\Exception\CircularReferenceException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-
-class PostListNormalizer implements NormalizerInterface
+class CategoryListNormalizer implements NormalizerInterface
 {
     /**
-     * @var PostNormalizer
+     * @var CategoryNormalizer
      */
     protected $normalizer;
 
-    public function __construct(PostNormalizer $normalizer)
+    public function __construct(CategoryNormalizer $normalizer)
     {
         $this->normalizer = $normalizer;
     }
@@ -44,8 +42,8 @@ class PostListNormalizer implements NormalizerInterface
             'total' => $object['total'],
             'page' => $object['page'],
             'perpage' => $object['perpage'],
-            'items' => array_map(function(Post $post) {
-                return $this->normalizer->normalize($post);
+            'items' => array_map(function(Category $category) {
+                return $this->normalizer->normalize($category);
             }, $object['items']),
         ];
     }

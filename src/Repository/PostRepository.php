@@ -22,10 +22,11 @@ class PostRepository extends BaseRepository
     /**
      * @param Post $entity
      * @param array $ids
+     * @param bool $save
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function syncCategories(Post &$entity, array $ids = [])
+    public function syncCategories(Post &$entity, array $ids = [], bool $save = true)
     {
         $manager = $this->getEntityManager();
 
@@ -41,10 +42,16 @@ class PostRepository extends BaseRepository
             }
         }
 
-        $manager->flush();
-        $manager->refresh($entity);
+        if($save) {
+            $manager->flush();
+            $manager->refresh($entity);
+        }
     }
 
+    /**
+     * @param array $ids
+     * @return array
+     */
     public function getPostIdsByCategory($ids = [])
     {
         $connection = $this->getEntityManager()->getConnection();

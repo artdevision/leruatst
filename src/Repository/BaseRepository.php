@@ -6,8 +6,10 @@ use App\AppBundle\AppBundle;
 use App\Entity\Category;
 use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Query\Expr;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use ReflectionParameter;
@@ -143,5 +145,32 @@ class BaseRepository extends ServiceEntityRepository
             'page' => $p,
             'perpage' => $perPage
         ];
+    }
+
+    /**
+     * @param $id
+     * @return mixed|null
+     * @throws DBALException
+     */
+    public function destroy($id)
+    {
+        if(is_int($id) || is_array($id)) {
+            if ($this instanceof PostRepository || $this instanceof CategoryRepository)
+            {
+                $field = ($this instanceof PostRepository) ? 'post_id' : 'category_id';
+                $connection = $this->getEntityManager()->getConnection();
+                $queryBuilder = $connection->createQueryBuilder();
+                $query = $queryBuilder->delete('posts_categories', 'p')
+                    ->where($queryBuilder->expr()->in('p.' . $field, is_int($id) ? [$id] : $id))
+                    ->getSQL();
+                $connection->exec($query);
+            }
+            return $this->createQueryBuilder('p')
+                ->delete()
+                ->where((new Expr())->in('p.id', is_int($id) ? [$id] : $id))
+                ->getQuery()
+                ->execute();
+        }
+        return null;
     }
 }

@@ -9,6 +9,7 @@ use App\Serializer\Normalizer\PostListNormalizer;
 use App\Serializer\Normalizer\PostNormalizer;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -93,8 +94,10 @@ class PostController extends ApiController
     /**
      * @param PostNormalizer $normalizer
      * @param ValidatorInterface $validator
-     * @return Response|void
+     * @return \Symfony\Component\HttpFoundation\JsonResponse|Response
      * @throws ExceptionInterface
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \ReflectionException
      * @Route("/post/create", methods={"POST", "PUT"})
      */
@@ -112,6 +115,10 @@ class PostController extends ApiController
             return $this->responseValidationErrors($errors);
         }
 
+        if(isset($data['categories']) && is_array($data['categories']) && is_int($data['categories'][0])) {
+            $repository->syncCategories($post, $data['categories'], false);
+        }
+
         $repository->save($post, true);
 
         $post = $normalizer->normalize($post);
@@ -122,8 +129,10 @@ class PostController extends ApiController
      * @param int $id
      * @param PostNormalizer $normalizer
      * @param ValidatorInterface $validator
-     * @return Response|void
+     * @return \Symfony\Component\HttpFoundation\JsonResponse|Response
      * @throws ExceptionInterface
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \ReflectionException
      * @Route("/post/update/{id<\d+>?0}", defaults={"id"=0}, methods={"POST", "PUT"})
      */
@@ -149,8 +158,11 @@ class PostController extends ApiController
             return $this->responseValidationErrors($errors);
         }
 
-        $repository->save($post);
+        if(isset($data['categories']) && is_array($data['categories']) && is_int($data['categories'][0])) {
+            $repository->syncCategories($post, $data['categories'], false);
+        }
 
+        $repository->save($post);
         $post = $normalizer->normalize($post);
 
         return $this->sendResponse($this->getSerializer()->serialize($post, 'json'));
@@ -163,8 +175,24 @@ class PostController extends ApiController
     {
         $data = $this->getData();
 
-        if(($id === 0 && !$this->isJson)) {
+        if(
+            ($id === 0 && $data === null) ||
+            ($id === 0 && !isset($data['id']))
+
+        ) {
             throw new BadRequestHttpException("Неверный ID или JSON");
         }
+
+        if($count = $this->getRepository()->destroy(($id !== 0) ? $id : $data['id'])) {
+            return new JsonResponse([
+                'success' => true,
+                'count' => $count,
+            ]);
+        }
+
+        return new JsonResponse([
+            'error' => true,
+            'message' => 'Ошибка удаления'
+        ], 400);
     }
 }

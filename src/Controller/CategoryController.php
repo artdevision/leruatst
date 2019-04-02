@@ -7,10 +7,12 @@ use App\Entity\Category;
 use App\Repository\CategoryRepository;
 use App\Serializer\Normalizer\CategoryListNormalizer;
 use App\Serializer\Normalizer\CategoryNormalizer;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\Response;
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -83,6 +85,7 @@ class CategoryController extends ApiController
      * @return \Symfony\Component\HttpFoundation\JsonResponse|Response
      * @throws ExceptionInterface
      * @throws \ReflectionException
+     * @Route("/category/create", methods={"POST", "PUT"})
      */
     public function create(CategoryNormalizer $normalizer, ValidatorInterface $validator)
     {
@@ -103,8 +106,70 @@ class CategoryController extends ApiController
         return $this->sendResponse($this->getSerializer()->serialize($category, 'json'));
     }
 
-    public function update(int $id)
+    /**
+     * @param int $id
+     * @param CategoryNormalizer $normalizer
+     * @param ValidatorInterface $validator
+     * @return \Symfony\Component\HttpFoundation\JsonResponse|Response
+     * @throws ExceptionInterface
+     * @throws \ReflectionException
+     * @Route("/category/update/{id<\d+>?0}", defaults={"id"=0}, methods={"POST", "PUT"})
+     */
+    public function update(int $id, CategoryNormalizer $normalizer, ValidatorInterface $validator)
     {
+        $data = $this->getData();
 
+        $repository = $this->getRepository();
+
+        if(
+            ($id === 0 && !$this->isJson) ||
+            ($id === 0 && !isset($data['id'])) ||
+            !($category = $repository->find(($id !== 0) ? $id : $data['id']))
+        ) {
+            throw new BadRequestHttpException("Неверный ID или JSON");
+        }
+
+        $repository->fill($category, $data);
+        $errors = $validator->validate($category,null,['update']);
+
+        if ($errors->count()) {
+            return $this->responseValidationErrors($errors);
+        }
+
+        $repository->save($category);
+        $category = $normalizer->normalize($category);
+
+        return $this->sendResponse($this->getSerializer()->serialize($category, 'json'));
+    }
+
+    /**
+     * @param int $id
+     * @return JsonResponse
+     * @throws DBALException
+     * @Route("/category/destroy/{id<\d+>?0}", defaults={"id"=0}, methods={"GET", "POST", "DELETE"})
+     */
+    public function destroy(int $id)
+    {
+        $data = $this->getData();
+
+        if(
+            ($id === 0 && $data === null) ||
+            ($id === 0 && !isset($data['id']))
+
+        ) {
+            throw new BadRequestHttpException("Неверный ID или JSON");
+        }
+
+        if($count = $this->getRepository()->destroy(($id !== 0) ? $id : $data['id'])) {
+            return new JsonResponse([
+                'success' => true,
+                'count' => $count,
+            ]);
+        }
+
+        return new JsonResponse([
+            'error' => true,
+            'message' => 'Ошибка удаления'
+        ], 400);
     }
 }

@@ -66,4 +66,31 @@ root@container$ ./bin/console doctrine:database:create
 root@container$ ./bin/console doctrine:migrations:migrate
 ```
 
+Равзорачиваем тестовые данные данные
+```bash
+root@container$ ./bin/console doctrine:fixtures:load
+```
+
+### Роуты
+
+```bash
+root@container$ ./bin/console debug:router
+ ---------------------- ----------------- -------- ------ ---------------------------- 
+  Name                   Method            Scheme   Host   Path                        
+ ---------------------- ----------------- -------- ------ ---------------------------- 
+  _twig_error_test       ANY               ANY      ANY    /_error/{code}.{_format}    
+  app_category_index     GET               ANY      ANY    /api/category               
+  app_category_view      GET               ANY      ANY    /api/category/{id}          
+  app_category_create    POST|PUT          ANY      ANY    /api/category/create        
+  app_category_update    POST|PUT          ANY      ANY    /api/category/update/{id}   
+  app_category_destroy   GET|POST|DELETE   ANY      ANY    /api/category/destroy/{id}  
+  app_post_index         GET|POST          ANY      ANY    /api/post                   
+  app_post_view          GET               ANY      ANY    /api/post/{id}              
+  app_post_create        POST|PUT          ANY      ANY    /api/post/create            
+  app_post_update        POST|PUT          ANY      ANY    /api/post/update/{id}       
+  app_post_destroy       GET|POST|DELETE   ANY      ANY    /api/post/destroy/{id}      
+  fos_js_routing_js      GET               ANY      ANY    /js/routing.{_format}       
+ ---------------------- ----------------- -------- ------ ---------------------------- 
+```
+
 [jwilder/nginx-proxy]: https://github.com/jwilder/nginx-proxy

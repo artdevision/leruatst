@@ -39,6 +39,29 @@ class ApiController extends AbstractController
      */
     protected $data;
 
+    /**
+     * @param array|null $data
+     */
+    public function setData(array $data = null)
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * @param bool $isJson
+     */
+    public function setIsJson(bool $isJson = false) {
+        $this->isJson = $isJson;
+    }
+
+    /**
+     * @return array|mixed|null
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
     public function getSerializer()
     {
         if(is_null($this->serializer)) {
@@ -56,24 +79,6 @@ class ApiController extends AbstractController
             $this->request = Request::createFromGlobals();
         }
         return $this->request;
-    }
-
-    /**
-     * @return array|mixed|null
-     */
-    public function getData()
-    {
-        $request = $this->getRequest();
-        if (in_array($request->getMethod(), ["POST", "PUT", "DELETE"]) && is_null($this->data)) {
-            if($this->data = json_decode($request->getContent(), true)) {
-                $this->isJson = true;
-            }
-            else {
-                $this->data = $request->request->all();
-            }
-        }
-
-        return $this->data;
     }
 
     /**

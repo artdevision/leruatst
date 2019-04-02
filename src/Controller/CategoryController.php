@@ -4,11 +4,11 @@ namespace App\Controller;
 
 use App\Controller\Common\ApiController;
 use App\Entity\Category;
+use App\Exception\ApiBadRequestHttpException;
 use App\Repository\CategoryRepository;
 use App\Serializer\Normalizer\CategoryListNormalizer;
 use App\Serializer\Normalizer\CategoryNormalizer;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,7 +71,7 @@ class CategoryController extends ApiController
         $category = $this->getRepository()->find($id);
 
         if ($category === null) {
-            throw new BadRequestHttpException("Неверный ID");
+            throw new ApiBadRequestHttpException("Неверный ID");
         }
 
         $category = $normalizer->normalize($category);
@@ -126,7 +126,7 @@ class CategoryController extends ApiController
             ($id === 0 && !isset($data['id'])) ||
             !($category = $repository->find(($id !== 0) ? $id : $data['id']))
         ) {
-            throw new BadRequestHttpException("Неверный ID или JSON");
+            throw new ApiBadRequestHttpException("Неверный ID или JSON");
         }
 
         $repository->fill($category, $data);
@@ -157,7 +157,7 @@ class CategoryController extends ApiController
             ($id === 0 && !isset($data['id']))
 
         ) {
-            throw new BadRequestHttpException("Неверный ID или JSON");
+            throw new ApiBadRequestHttpException("Неверный ID или JSON");
         }
 
         if($count = $this->getRepository()->destroy(($id !== 0) ? $id : $data['id'])) {

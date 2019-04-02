@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Controller\Common\ApiController;
 use App\Entity\Post;
+use App\Exception\ApiBadRequestHttpException;
 use App\Repository\PostRepository;
 use App\Serializer\Normalizer\PostListNormalizer;
 use App\Serializer\Normalizer\PostNormalizer;
@@ -11,7 +12,6 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -83,7 +83,7 @@ class PostController extends ApiController
         $post = $this->getRepository()->find($id);
 
         if ($post === null) {
-            throw new BadRequestHttpException("Неверный ID");
+            throw new ApiBadRequestHttpException("Неверный ID");
         }
 
         $post = $normalizer->normalize($post);
@@ -148,7 +148,7 @@ class PostController extends ApiController
             ($id === 0 && !isset($data['id'])) ||
             !($post = $repository->find(($id !== 0) ? $id : $data['id']))
         ) {
-            throw new BadRequestHttpException("Неверный ID или JSON");
+            throw new ApiBadRequestHttpException("Неверный ID или JSON");
         }
 
         $repository->fill($post, $data);
@@ -180,7 +180,7 @@ class PostController extends ApiController
             ($id === 0 && !isset($data['id']))
 
         ) {
-            throw new BadRequestHttpException("Неверный ID или JSON");
+            throw new ApiBadRequestHttpException("Неверный ID или JSON");
         }
 
         if($count = $this->getRepository()->destroy(($id !== 0) ? $id : $data['id'])) {

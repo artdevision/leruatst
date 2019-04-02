@@ -28,3 +28,9 @@ services:
     # please note that last definitions always *replace* previous ones
     app.normiliser.post:
         class: 'App\Serializer\Normalizer\PostNormalizer'
+
+    rest_event_subscriber:
+        class: 'App\EventSubscriber\RestSubscriber'
+        arguments: []
+        tags:
+            - { name: kernel.event_subscriber }
